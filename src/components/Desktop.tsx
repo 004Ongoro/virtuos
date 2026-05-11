@@ -6,6 +6,7 @@ import { NotificationPanel } from './NotificationPanel';
 import { Modal } from './Modal';
 import { Suspense, Component, useState, useEffect, useRef } from 'preact/compat';
 import { APP_REGISTRY } from '../apps/registry';
+import { Tooltip } from './Tooltip';
 import * as Icons from 'lucide-preact';
 
 class ErrorBoundary extends Component<{ children: any }, { hasError: boolean, error: any }> {
@@ -280,39 +281,40 @@ export function Desktop() {
             const Icon = (Icons as any)[app.icon] || Icons.AppWindow;
             const isSelected = selectedIcons.includes(app.id);
             return (
-              <div 
-                key={app.id}
-                data-id={app.id}
-                className={`desktop-icon ${isSelected ? 'selected' : ''}`}
-                style={{ 
-                    width: iconSize.wrapper,
-                    background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-                    borderRadius: '8px',
-                    padding: '5px'
-                }}
-                onClick={(e) => {
+              <Tooltip key={app.id} text={app.name} position="bottom" delay={800}>
+                <div 
+                  data-id={app.id}
+                  className={`desktop-icon ${isSelected ? 'selected' : ''}`}
+                  style={{ 
+                      width: iconSize.wrapper,
+                      background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+                      borderRadius: '8px',
+                      padding: '5px'
+                  }}
+                  onClick={(e) => {
+                      e.stopPropagation();
+                      if (e.ctrlKey || e.metaKey) {
+                          setSelectedIcons(prev => prev.includes(app.id) ? prev.filter(id => id !== app.id) : [...prev, app.id]);
+                      } else {
+                          setSelectedIcons([app.id]);
+                      }
+                  }}
+                  onDblClick={() => launchApp(app.id)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                    if (e.ctrlKey || e.metaKey) {
-                        setSelectedIcons(prev => prev.includes(app.id) ? prev.filter(id => id !== app.id) : [...prev, app.id]);
-                    } else {
-                        setSelectedIcons([app.id]);
-                    }
-                }}
-                onDblClick={() => launchApp(app.id)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  showContextMenu(e.clientX, e.clientY, [
-                    { label: `Open ${app.name}`, icon: 'ExternalLink', action: () => launchApp(app.id) },
-                    { label: 'Properties', icon: 'Info', action: () => console.log('Properties') },
-                  ]);
-                }}
-              >
-                <div className="desktop-icon-image" style={{ background: isSelected ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={iconSize.icon} color="white" />
+                    showContextMenu(e.clientX, e.clientY, [
+                      { label: `Open ${app.name}`, icon: 'ExternalLink', action: () => launchApp(app.id) },
+                      { label: 'Properties', icon: 'Info', action: () => console.log('Properties') },
+                    ]);
+                  }}
+                >
+                  <div className="desktop-icon-image" style={{ background: isSelected ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={iconSize.icon} color="white" />
+                  </div>
+                  <span className="desktop-icon-label" style={{ fontSize: desktopIconSize === 'small' ? '10px' : '12px' }}>{app.name}</span>
                 </div>
-                <span className="desktop-icon-label" style={{ fontSize: desktopIconSize === 'small' ? '10px' : '12px' }}>{app.name}</span>
-              </div>
+              </Tooltip>
             );
           })}
 
@@ -324,58 +326,59 @@ export function Desktop() {
             const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext || '');
 
             return (
-              <div 
-                key={item.name}
-                data-id={item.name}
-                className={`desktop-icon ${isSelected ? 'selected' : ''}`}
-                style={{ 
-                    width: iconSize.wrapper,
-                    background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-                    borderRadius: '8px',
-                    padding: '5px'
-                }}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    if (e.ctrlKey || e.metaKey) {
-                        setSelectedIcons(prev => prev.includes(item.name) ? prev.filter(id => id !== item.name) : [...prev, item.name]);
+              <Tooltip key={item.name} text={item.name} position="bottom" delay={800}>
+                <div 
+                  data-id={item.name}
+                  className={`desktop-icon ${isSelected ? 'selected' : ''}`}
+                  style={{ 
+                      width: iconSize.wrapper,
+                      background: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+                      borderRadius: '8px',
+                      padding: '5px'
+                  }}
+                  onClick={(e) => {
+                      e.stopPropagation();
+                      if (e.ctrlKey || e.metaKey) {
+                          setSelectedIcons(prev => prev.includes(item.name) ? prev.filter(id => id !== item.name) : [...prev, item.name]);
+                      } else {
+                          setSelectedIcons([item.name]);
+                      }
+                  }}
+                  onDblClick={() => {
+                    if (isDir) {
+                      launchApp('files', { initialPath: `/home/desktop/${item.name}` });
                     } else {
-                        setSelectedIcons([item.name]);
+                      launchApp('notepad', { filePath: `/home/desktop/${item.name}` });
                     }
-                }}
-                onDblClick={() => {
-                  if (isDir) {
-                    launchApp('files', { initialPath: `/home/desktop/${item.name}` });
-                  } else {
-                    launchApp('notepad', { filePath: `/home/desktop/${item.name}` });
-                  }
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  showContextMenu(e.clientX, e.clientY, [
-                    { label: 'Open', icon: 'ExternalLink', action: () => isDir ? launchApp('files', { initialPath: `/home/desktop/${item.name}` }) : launchApp('notepad', { filePath: `/home/desktop/${item.name}` }) },
-                    { label: 'Delete', icon: 'Trash', action: () => {
-                      showModal({
-                        title: 'Delete',
-                        message: `Are you sure you want to delete ${item.name}?`,
-                        type: 'confirm',
-                        onConfirm: async () => {
-                          const { vfs } = await import('../vfs/vfs');
-                          await vfs.deleteFile(`/home/desktop/${item.name}`);
-                          loadDesktopFiles();
-                        }
-                      });
-                    }},
-                  ]);
-                }}
-              >
-                <div className="desktop-icon-image" style={{ background: isSelected ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {isDir ? <Icons.Folder size={iconSize.icon} color="#3b82f6" fill="#3b82f6" fillOpacity={0.2} /> : 
-                   isImage ? <Icons.Image size={iconSize.icon} color="#10b981" /> : 
-                   <Icons.FileText size={iconSize.icon} color="white" />}
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showContextMenu(e.clientX, e.clientY, [
+                      { label: 'Open', icon: 'ExternalLink', action: () => isDir ? launchApp('files', { initialPath: `/home/desktop/${item.name}` }) : launchApp('notepad', { filePath: `/home/desktop/${item.name}` }) },
+                      { label: 'Delete', icon: 'Trash', action: () => {
+                        showModal({
+                          title: 'Delete',
+                          message: `Are you sure you want to delete ${item.name}?`,
+                          type: 'confirm',
+                          onConfirm: async () => {
+                            const { vfs } = await import('../vfs/vfs');
+                            await vfs.deleteFile(`/home/desktop/${item.name}`);
+                            loadDesktopFiles();
+                          }
+                        });
+                      }},
+                    ]);
+                  }}
+                >
+                  <div className="desktop-icon-image" style={{ background: isSelected ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isDir ? <Icons.Folder size={iconSize.icon} color="#3b82f6" fill="#3b82f6" fillOpacity={0.2} /> : 
+                     isImage ? <Icons.Image size={iconSize.icon} color="#10b981" /> : 
+                     <Icons.FileText size={iconSize.icon} color="white" />}
+                  </div>
+                  <span className="desktop-icon-label" style={{ fontSize: desktopIconSize === 'small' ? '10px' : '12px' }}>{item.name}</span>
                 </div>
-                <span className="desktop-icon-label" style={{ fontSize: desktopIconSize === 'small' ? '10px' : '12px' }}>{item.name}</span>
-              </div>
+              </Tooltip>
             );
           })}
         </div>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'preact/hooks';
 import { useKernel } from '../kernel/useKernel';
 import type { WindowState } from '../types';
 import { Minimize2, Maximize2, X } from 'lucide-preact';
+import { Tooltip } from './Tooltip';
 
 interface WindowProps {
   window: WindowState;
@@ -211,17 +212,21 @@ export function Window({ window: win, children }: WindowProps) {
         <div className="window-header" onMouseDown={handleMouseDown} onDblClick={toggleMaximize}>
           <span className="window-title">{win.title}</span>
           <div className="window-controls" style={{ position: 'relative' }}>
-            <button className="control-icon-btn" onClick={(e) => { e.stopPropagation(); minimizeWindow(win.id); }}>
-              <Minimize2 size={14} />
-            </button>
+            <Tooltip text="Minimize">
+              <button className="control-icon-btn" onClick={(e) => { e.stopPropagation(); minimizeWindow(win.id); }}>
+                <Minimize2 size={14} />
+              </button>
+            </Tooltip>
             <div 
               onMouseEnter={() => setShowSnapLayouts(true)} 
               onMouseLeave={() => setShowSnapLayouts(false)}
               style={{ position: 'relative' }}
             >
-              <button className="control-icon-btn" onClick={(e) => { e.stopPropagation(); toggleMaximize(); }}>
-                <Maximize2 size={14} />
-              </button>
+              <Tooltip text={win.isMaximized ? "Restore" : "Maximize"}>
+                <button className="control-icon-btn" onClick={(e) => { e.stopPropagation(); toggleMaximize(); }}>
+                  <Maximize2 size={14} />
+                </button>
+              </Tooltip>
               
               {/* Windows 11 Snap Layouts Popup */}
               {showSnapLayouts && (
@@ -276,9 +281,11 @@ export function Window({ window: win, children }: WindowProps) {
                 </div>
               )}
             </div>
-            <button className="control-icon-btn close" onClick={(e) => { e.stopPropagation(); closeWindow(win.id); }}>
-              <X size={14} />
-            </button>
+            <Tooltip text="Close">
+              <button className="control-icon-btn close" onClick={(e) => { e.stopPropagation(); closeWindow(win.id); }}>
+                <X size={14} />
+              </button>
+            </Tooltip>
           </div>
         </div>
         <div className="window-content">

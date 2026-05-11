@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { useKernel } from '../kernel/useKernel';
 import { APP_REGISTRY } from '../apps/registry';
+import { Tooltip } from './Tooltip';
 import * as Icons from 'lucide-preact';
 
 export function Taskbar() {
@@ -26,15 +27,19 @@ export function Taskbar() {
     return 18;
   };
 
+  const tooltipPos = taskbarPosition === 'bottom' ? 'top' : 'bottom';
+
   return (
     <div className={`taskbar ${taskbarPosition} ${taskbarSize}`} style={{ height: getTaskbarHeight() }}>
-      <button 
-        className={`start-btn ${isStartOpen ? 'active' : ''}`}
-        onClick={() => setIsStartOpen(!isStartOpen)}
-        style={{ width: getTaskbarHeight() - 8, height: getTaskbarHeight() - 8 }}
-      >
-        <img src="/logo.png" style={{ width: '80%', height: '80%', objectFit: 'contain' }} alt="Start" />
-      </button>
+      <Tooltip text="Start" position={tooltipPos}>
+        <button 
+          className={`start-btn ${isStartOpen ? 'active' : ''}`}
+          onClick={() => setIsStartOpen(!isStartOpen)}
+          style={{ width: getTaskbarHeight() - 8, height: getTaskbarHeight() - 8 }}
+        >
+          <img src="/logo.png" style={{ width: '80%', height: '80%', objectFit: 'contain' }} alt="Start" />
+        </button>
+      </Tooltip>
       
       {isStartOpen && (
         <div className="start-menu">
@@ -81,49 +86,56 @@ export function Taskbar() {
           const isFocused = activeWindows.some(w => w.id === focusedWindowId);
           
           return (
-            <div
-              key={appId}
-              className={`taskbar-item ${isFocused ? 'active' : ''} ${isRunning ? 'running' : ''}`}
-              style={{ width: getTaskbarHeight() - 4, height: getTaskbarHeight() - 4 }}
-              onClick={() => {
-                if (isRunning) {
-                  const win = activeWindows.find(w => w.id === focusedWindowId) || activeWindows[0];
-                  if (win.id === focusedWindowId) {
-                    minimizeWindow(win.id);
+            <Tooltip key={appId} text={app?.name || appId} position={tooltipPos}>
+              <div
+                className={`taskbar-item ${isFocused ? 'active' : ''} ${isRunning ? 'running' : ''}`}
+                style={{ width: getTaskbarHeight() - 4, height: getTaskbarHeight() - 4 }}
+                onClick={() => {
+                  if (isRunning) {
+                    const win = activeWindows.find(w => w.id === focusedWindowId) || activeWindows[0];
+                    if (win.id === focusedWindowId) {
+                      minimizeWindow(win.id);
+                    } else {
+                      focusWindow(win.id);
+                    }
                   } else {
-                    focusWindow(win.id);
+                    launchApp(appId);
                   }
-                } else {
-                  launchApp(appId);
-                }
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const isPinned = pinnedApps.includes(appId);
-                showContextMenu(e.clientX, e.clientY, [
-                  { label: isPinned ? 'Unpin from Taskbar' : 'Pin to Taskbar', icon: isPinned ? 'PinOff' : 'Pin', action: () => isPinned ? unpinApp(appId) : pinApp(appId) },
-                  isRunning ? { label: 'Close All Windows', icon: 'X', action: () => activeWindows.forEach(w => useKernel.getState().closeWindow(w.id)), danger: true } : null,
-                ].filter(Boolean) as any);
-              }}
-            >
-              <Icon size={getIconSize()} />
-              {isRunning && <div className="running-indicator" />}
-            </div>
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const isPinned = pinnedApps.includes(appId);
+                  showContextMenu(e.clientX, e.clientY, [
+                    { label: isPinned ? 'Unpin from Taskbar' : 'Pin to Taskbar', icon: isPinned ? 'PinOff' : 'Pin', action: () => isPinned ? unpinApp(appId) : pinApp(appId) },
+                    isRunning ? { label: 'Close All Windows', icon: 'X', action: () => activeWindows.forEach(w => useKernel.getState().closeWindow(w.id)), danger: true } : null,
+                  ].filter(Boolean) as any);
+                }}
+              >
+                <Icon size={getIconSize()} />
+                {isRunning && <div className="running-indicator" />}
+              </div>
+            </Tooltip>
           );
         })}
       </div>
 
       <div className="system-tray">
-        <div className="tray-item" onClick={toggleNotificationPanel} style={{ cursor: 'pointer' }}>
-          <Icons.Bell size={getIconSize() - 4} />
-        </div>
-        <div className="tray-item">
-          <Icons.Wifi size={getIconSize() - 4} />
-        </div>
-        <div className="tray-item">
-          <Icons.Volume2 size={getIconSize() - 4} />
-        </div>
+        <Tooltip text="Notifications" position={tooltipPos}>
+          <div className="tray-item" onClick={toggleNotificationPanel} style={{ cursor: 'pointer' }}>
+            <Icons.Bell size={getIconSize() - 4} />
+          </div>
+        </Tooltip>
+        <Tooltip text="Wi-Fi" position={tooltipPos}>
+          <div className="tray-item">
+            <Icons.Wifi size={getIconSize() - 4} />
+          </div>
+        </Tooltip>
+        <Tooltip text="Volume" position={tooltipPos}>
+          <div className="tray-item">
+            <Icons.Volume2 size={getIconSize() - 4} />
+          </div>
+        </Tooltip>
         <div className="tray-time" style={{ fontSize: taskbarSize === 'small' ? '10px' : '12px' }}>
           {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: clockFormat === '12h' })}
         </div>
