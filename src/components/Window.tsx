@@ -15,13 +15,11 @@ export function Window({ window: win, children }: WindowProps) {
     minimizeWindow, 
     maximizeWindow, 
     updateWindowPosition,
-    updateWindowSize,
-    enableJellyAnimation
+    updateWindowSize
   } = useKernel();
   
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [skew, setSkew] = useState(0);
   
   // Snap and restore state
   const [restoredState, setRestoredState] = useState<{x: number, y: number, w: number, h: number} | null>(null);
@@ -29,8 +27,6 @@ export function Window({ window: win, children }: WindowProps) {
   const [showSnapLayouts, setShowSnapLayouts] = useState(false);
   
   const windowRef = useRef<HTMLDivElement>(null);
-  const lastX = useRef(win.x);
-  const animationFrame = useRef<number>();
 
   const isSnapped = restoredState !== null && !win.isMaximized;
 
@@ -96,7 +92,6 @@ export function Window({ window: win, children }: WindowProps) {
         const newY = e.clientY - 20; // 20px down into the header
         
         setDragOffset({ x: restoreW / 2, y: 20 });
-        lastX.current = e.clientX;
 
         if (win.isMaximized) maximizeWindow(win.id);
         setRestoredState(null);
@@ -107,7 +102,6 @@ export function Window({ window: win, children }: WindowProps) {
           x: e.clientX - win.x,
           y: e.clientY - win.y,
         });
-        lastX.current = e.clientX;
       }
     }
   };
@@ -141,13 +135,6 @@ export function Window({ window: win, children }: WindowProps) {
       else if (e.clientY <= 5) setSnapPreview('top');
       else setSnapPreview(null);
       
-      if (enableJellyAnimation) {
-        const velocity = e.clientX - lastX.current;
-        const newSkew = Math.max(-15, Math.min(15, velocity * 0.5));
-        setSkew(newSkew);
-        lastX.current = e.clientX;
-      }
-
       updateWindowPosition(win.id, x, y);
     };
 
@@ -170,24 +157,7 @@ export function Window({ window: win, children }: WindowProps) {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragOffset, win.id, updateWindowPosition, win.width, enableJellyAnimation, snapPreview, restoredState]);
-
-  // Jelly return to zero effect
-  useEffect(() => {
-    if (!isDragging && skew !== 0) {
-      const step = () => {
-        setSkew(prev => {
-          if (Math.abs(prev) < 0.1) return 0;
-          return prev * 0.8;
-        });
-        animationFrame.current = requestAnimationFrame(step);
-      };
-      animationFrame.current = requestAnimationFrame(step);
-    }
-    return () => {
-      if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
-    };
-  }, [isDragging, skew]);
+  }, [isDragging, dragOffset, win.id, updateWindowPosition, win.width, snapPreview, restoredState]);
 
   const toggleMaximize = () => {
     if (!win.isMaximized) {
@@ -209,8 +179,7 @@ export function Window({ window: win, children }: WindowProps) {
     width: win.isMaximized ? '100vw' : win.width,
     height: win.isMaximized ? 'calc(100vh - var(--taskbar-height))' : win.height,
     zIndex: win.zIndex,
-    transform: enableJellyAnimation ? `skewX(${skew}deg)` : 'none',
-    transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.1s ease-out'
+    transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
   };
 
   return (

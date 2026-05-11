@@ -78,7 +78,6 @@ export interface KernelState {
   clockFormat: '12h' | '24h';
   isNotificationPanelOpen: boolean;
   theme: 'light' | 'dark';
-  enableJellyAnimation: boolean;
   user: { username: string; password?: string } | null;
   isLoggedIn: boolean;
   hasSetup: boolean;
@@ -92,7 +91,6 @@ export interface KernelState {
   setTaskbarSize: (size: 'small' | 'medium' | 'large') => void;
   setClockFormat: (format: '12h' | '24h') => void;
   setTheme: (theme: 'light' | 'dark') => void;
-  setEnableJellyAnimation: (enable: boolean) => void;
   toggleNotificationPanel: () => void;
   setupUser: (username: string, password: string) => void;
   login: (password: string) => boolean;

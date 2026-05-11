@@ -24,7 +24,7 @@ export const help: CLIProgram = {
     if (programs && programs.length > 0) {
       print(programs.map(p => p.name).join(', '));
     } else {
-      print('help, ls, cd, cat, mkdir, rm, echo, pwd, whoami, vpkg, python, node, git, install, jelly');
+      print('help, ls, cd, cat, mkdir, rm, echo, pwd, whoami, vpkg, python, node, git, install');
     }
   }
 };
@@ -275,31 +275,8 @@ export const git: CLIProgram = {
   }
 };
 
-export const jelly: CLIProgram = {
-  name: 'jelly',
-  description: 'Toggle jelly window animation',
-  execute: async (args, { print, kernel }) => {
-    const arg = args[0]?.toLowerCase();
-    if (!arg) {
-      print(`Jelly animation is currently ${kernel.enableJellyAnimation ? 'ON' : 'OFF'}`);
-      print('Usage: jelly [on|off]');
-      return;
-    }
-
-    if (arg === 'on') {
-      kernel.setEnableJellyAnimation(true);
-      print('Jelly animation enabled');
-    } else if (arg === 'off') {
-      kernel.setEnableJellyAnimation(false);
-      print('Jelly animation disabled');
-    } else {
-      print(`Invalid argument: ${arg}. Use "on" or "off"`, 'error');
-    }
-  }
-};
-
 export const CLI_REGISTRY: Record<string, CLIProgram> = {
-  help, ls, cd, cat, mkdir, rm, echo, pwd, whoami, install, vpkg, python, node, git, jelly
+  help, ls, cd, cat, mkdir, rm, echo, pwd, whoami, install, vpkg, python, node, git
 };
 
 export const getCLIProgram = (name: string): CLIProgram | undefined => {

@@ -21,7 +21,6 @@ export const useKernel = create<KernelState>((set, get) => ({
   clockFormat: '12h',
   isNotificationPanelOpen: false,
   theme: 'dark',
-  enableJellyAnimation: true,
   user: null,
   isLoggedIn: false,
   hasSetup: false,
@@ -53,10 +52,6 @@ export const useKernel = create<KernelState>((set, get) => ({
   },
   setTheme: (theme: 'light' | 'dark') => {
     set({ theme });
-    get().persistSettings();
-  },
-  setEnableJellyAnimation: (enableJellyAnimation: boolean) => {
-    set({ enableJellyAnimation });
     get().persistSettings();
   },
   toggleNotificationPanel: () => set((state) => ({ isNotificationPanelOpen: !state.isNotificationPanelOpen })),
@@ -116,7 +111,6 @@ export const useKernel = create<KernelState>((set, get) => ({
       taskbarSize: state.taskbarSize,
       clockFormat: state.clockFormat,
       theme: state.theme,
-      enableJellyAnimation: state.enableJellyAnimation,
       user: state.user,
       hasSetup: state.hasSetup,
     };
@@ -147,7 +141,6 @@ export const useKernel = create<KernelState>((set, get) => ({
           taskbarSize: settings.taskbarSize ?? get().taskbarSize,
           clockFormat: settings.clockFormat ?? get().clockFormat,
           theme: settings.theme ?? get().theme,
-          enableJellyAnimation: settings.enableJellyAnimation ?? get().enableJellyAnimation,
           user: settings.user ?? get().user,
           hasSetup: settings.hasSetup ?? get().hasSetup,
         });
