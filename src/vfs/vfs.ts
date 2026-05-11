@@ -31,6 +31,15 @@ export const vfs = {
         await this.mkdir(parent === '' ? '/' : parent, name);
       }
     }
+
+    // Add a welcome script
+    if (!(await this.exists('/home/welcome.js'))) {
+      await this.writeFile('/home/welcome.js', "console.log('Welcome to VirtuOS!');\nconsole.log('Try running: vpkg list');");
+    }
+
+    if (!(await this.exists('/bin/hello'))) {
+      await this.writeFile('/bin/hello', "print('Hello from the VFS bin directory!');\nprint('Arguments: ' + args.join(', '));");
+    }
   },
 
   async moveFile(oldPath: string, newPath: string): Promise<void> {

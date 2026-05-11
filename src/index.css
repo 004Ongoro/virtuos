@@ -59,6 +59,9 @@ body {
   flex-direction: column;
   overflow: hidden;
   z-index: 100;
+  resize: both;
+  min-width: 200px;
+  min-height: 100px;
 }
 
 .window.focused {
@@ -130,6 +133,18 @@ body {
   flex: 1;
   overflow: auto;
   background: var(--surface-color);
+}
+
+.window-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 15px;
+  height: 15px;
+  cursor: nwse-resize;
+  z-index: 1001;
+  background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.2) 50%);
+  pointer-events: none;
 }
 
 /* Taskbar */

@@ -14,7 +14,8 @@ export function Window({ window: win, children }: WindowProps) {
     focusWindow, 
     minimizeWindow, 
     maximizeWindow, 
-    updateWindowPosition 
+    updateWindowPosition,
+    updateWindowSize
   } = useKernel();
   
   const [isDragging, setIsDragging] = useState(false);
@@ -38,6 +39,15 @@ export function Window({ window: win, children }: WindowProps) {
     }
   };
 
+  const handleMouseUpCapture = () => {
+    if (windowRef.current) {
+      const { width, height } = windowRef.current.getBoundingClientRect();
+      if (Math.abs(width - win.width) > 2 || Math.abs(height - win.height) > 2) {
+        updateWindowSize(win.id, width, height);
+      }
+    }
+  };
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
@@ -45,7 +55,6 @@ export function Window({ window: win, children }: WindowProps) {
       const newX = e.clientX - dragOffset.x;
       const newY = e.clientY - dragOffset.y;
       
-      // Use global window object to avoid collision with win prop
       const x = Math.max(-win.width + 50, Math.min(window.innerWidth - 50, newX));
       const y = Math.max(0, Math.min(window.innerHeight - 40, newY));
       
@@ -80,7 +89,8 @@ export function Window({ window: win, children }: WindowProps) {
       ref={windowRef}
       className={`window ${win.isMinimized ? 'minimized' : ''} ${win.isMaximized ? 'maximized' : ''} ${win.isFocused ? 'focused' : ''}`}
       style={style}
-      onMouseDown={() => focusWindow(win.id)}
+      onMouseDownCapture={() => focusWindow(win.id)}
+      onMouseUpCapture={handleMouseUpCapture}
     >
       <div className="window-header" onMouseDown={handleMouseDown}>
         <span className="window-title">{win.title}</span>
@@ -99,6 +109,7 @@ export function Window({ window: win, children }: WindowProps) {
       <div className="window-content">
         {children}
       </div>
+      {!win.isMaximized && <div className="window-resize-handle" />}
     </div>
   );
 }

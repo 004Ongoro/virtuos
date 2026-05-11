@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
-import { useOS } from '../../kernel/useOS';
-import { path } from '../../libs/path';
+import { useKernel } from '../../kernel/useKernel';
+import { vfs } from '../../vfs/vfs';
+import { getCLIProgram, getAllCLIPrograms } from '../cli/registry';
 
 interface LogEntry {
   type: 'input' | 'output' | 'error';
@@ -8,11 +9,11 @@ interface LogEntry {
 }
 
 export default function Terminal() {
-  const { fs } = useOS();
+  const kernel = useKernel();
   const [cwd, setCwd] = useState('/home');
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<LogEntry[]>([
-    { type: 'output', content: 'VirtuOS Terminal v1.0.0' },
+    { type: 'output', content: 'VirtuOS Terminal v1.2.0' },
     { type: 'output', content: 'Type "help" for a list of commands.' }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -23,6 +24,13 @@ export default function Terminal() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [history]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const addLog = (content: string, type: LogEntry['type'] = 'output') => {
     setHistory(prev => [...prev, { type, content }]);
@@ -35,112 +43,52 @@ export default function Terminal() {
     addLog(`${cwd} $ ${trimmed}`, 'input');
     
     const [command, ...args] = trimmed.split(' ');
+    const progName = command.toLowerCase();
 
-    switch (command.toLowerCase()) {
-      case 'help':
-        addLog('Available commands: help, clear, ls, cd, cat, mkdir, rm, echo, whoami, pwd');
-        break;
+    if (progName === 'clear') {
+      setHistory([]);
+      return;
+    }
 
-      case 'clear':
-        setHistory([]);
-        break;
-
-      case 'ls': {
-        try {
-          const items = await fs.listFiles(cwd);
-          if (items.length === 0) {
-            addLog('(directory empty)');
-          } else {
-            addLog(items.map(item => item.type === 'dir' ? `[DIR] ${item.name}` : item.name).join('  '));
-          }
-        } catch (err) {
-          addLog('Error listing files', 'error');
-        }
-        break;
+    try {
+      const program = getCLIProgram(progName);
+      if (program) {
+        await program.execute(args, {
+          cwd,
+          fs: vfs,
+          kernel,
+          print: (msg, type) => addLog(msg, type),
+          setCwd: (newPath) => setCwd(newPath),
+          programs: getAllCLIPrograms()
+        });
+        return;
       }
 
-      case 'cd': {
-        const target = args[0] || '/home';
-        const newPath = path.resolve(cwd, target);
-        if (await fs.exists(newPath)) {
-          const node = await fs.readFile(newPath);
-          if (node?.type === 'dir') {
-            setCwd(newPath);
-          } else {
-            addLog(`cd: ${target}: Not a directory`, 'error');
-          }
-        } else {
-          addLog(`cd: ${target}: No such file or directory`, 'error');
-        }
-        break;
+      // Try VFS /bin
+      const binPath = `/bin/${progName}`;
+      const file = await vfs.readFile(binPath);
+      if (file && file.type === 'file') {
+        const sandbox = {
+          print: (msg: string, type: any) => addLog(msg, type),
+          args,
+          fs: vfs,
+          kernel,
+          cwd,
+          setCwd: (p: string) => setCwd(p)
+        };
+        const fn = new Function('ctx', `
+          const { print, args, fs, kernel, cwd, setCwd } = ctx;
+          return (async () => {
+            ${file.content}
+          })();
+        `);
+        await fn(sandbox);
+        return;
       }
 
-      case 'cat': {
-        const target = args[0];
-        if (!target) {
-          addLog('Usage: cat [filename]', 'error');
-          break;
-        }
-        const filePath = path.resolve(cwd, target);
-        const node = await fs.readFile(filePath);
-        if (node && node.type === 'file') {
-          addLog(node.content || '');
-        } else {
-          addLog(`cat: ${target}: No such file`, 'error');
-        }
-        break;
-      }
-
-      case 'mkdir': {
-        const name = args[0];
-        if (!name) {
-          addLog('Usage: mkdir [directory_name]', 'error');
-          break;
-        }
-        await fs.mkdir(cwd, name);
-        addLog(`Directory "${name}" created.`);
-        break;
-      }
-
-      case 'rm': {
-        const name = args[0];
-        if (!name) {
-          addLog('Usage: rm [name]', 'error');
-          break;
-        }
-        const targetPath = path.resolve(cwd, name);
-        if (await fs.exists(targetPath)) {
-          await fs.deleteFile(targetPath);
-          addLog(`Removed "${name}".`);
-        } else {
-          addLog(`rm: ${name}: No such file or directory`, 'error');
-        }
-        break;
-      }
-
-      case 'echo': {
-        const text = args.join(' ');
-        if (text.includes('>')) {
-          const [content, fileName] = text.split('>').map(s => s.trim());
-          const filePath = path.resolve(cwd, fileName);
-          await fs.writeFile(filePath, content);
-          addLog(`Written to ${fileName}`);
-        } else {
-          addLog(text);
-        }
-        break;
-      }
-
-      case 'pwd':
-        addLog(cwd);
-        break;
-
-      case 'whoami':
-        addLog('virtuos-user');
-        break;
-
-      default:
-        addLog(`Command not found: ${command}`, 'error');
+      addLog(`Command not found: ${progName}`, 'error');
+    } catch (err: any) {
+      addLog(`Error: ${err.message || err}`, 'error');
     }
   };
 
@@ -152,36 +100,33 @@ export default function Terminal() {
         height: '100%', 
         background: '#000', 
         color: '#00ff00', 
-        fontFamily: '"Cascadia Code", "Fira Code", monospace',
+        fontFamily: 'monospace',
         padding: '10px',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
-        fontSize: '14px'
+        overflow: 'hidden'
       }}
     >
       <div 
         ref={scrollRef}
-        style={{ flex: 1, overflowY: 'auto', marginBottom: '5px' }}
+        style={{ flex: 1, overflowY: 'auto' }}
       >
         {history.map((entry, i) => (
           <div key={i} style={{ 
-            marginBottom: '4px', 
             color: entry.type === 'error' ? '#ff5555' : entry.type === 'input' ? '#ffffff' : '#00ff00',
             whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all'
+            marginBottom: '4px'
           }}>
             {entry.content}
           </div>
         ))}
       </div>
       
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>{cwd} $</span>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <span style={{ color: '#00ff00' }}>{cwd} $</span>
         <input 
           ref={inputRef}
           type="text" 
-          autoFocus
           value={input}
           onInput={(e) => setInput((e.target as HTMLInputElement).value)}
           onKeyDown={(e) => {
@@ -196,8 +141,7 @@ export default function Terminal() {
             border: 'none', 
             outline: 'none', 
             color: '#fff',
-            fontFamily: 'inherit',
-            fontSize: 'inherit'
+            fontFamily: 'monospace'
           }}
         />
       </div>

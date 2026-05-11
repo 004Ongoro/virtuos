@@ -24,7 +24,16 @@ export function LoginScreen() {
 
   return (
     <div className="login-screen" style={desktopStyle}>
-      <div className="login-card">
+      {/* Background Blur Overlay */}
+      <div style={{ 
+        position: 'absolute', 
+        inset: 0, 
+        backdropFilter: 'blur(10px)', 
+        background: 'rgba(0,0,0,0.3)',
+        zIndex: 0
+      }} />
+
+      <div className="login-card" style={{ position: 'relative', zIndex: 1 }}>
         <div className="login-avatar">
           <div className="avatar-placeholder">
             <Icons.User size={48} color="white" />

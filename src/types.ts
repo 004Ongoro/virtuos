@@ -104,8 +104,8 @@ export interface KernelState {
 
 export interface VFSNode {
   name: string;
-  type: 'file' | 'directory';
+  type: 'file' | 'dir';
   content?: any;
-  parent?: string;
+  parent: string;
   updatedAt: number;
 }

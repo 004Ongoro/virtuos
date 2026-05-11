@@ -3,9 +3,38 @@ import { Window } from './Window';
 import { Taskbar } from './Taskbar';
 import { ContextMenu } from './ContextMenu';
 import { NotificationPanel } from './NotificationPanel';
-import { Suspense } from 'preact/compat';
+import { Suspense, Component } from 'preact/compat';
 import { APP_REGISTRY } from '../apps/registry';
 import * as Icons from 'lucide-preact';
+
+class ErrorBoundary extends Component<{ children: any }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', color: '#ff5555', background: '#1a1a1a', height: '100%', overflow: 'auto' }}>
+          <h3>App Crash</h3>
+          <pre style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>{this.state.error?.toString()}</pre>
+          <button 
+            onClick={() => this.setState({ hasError: false })}
+            style={{ marginTop: '10px', padding: '5px 10px', cursor: 'pointer' }}
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Dynamic component loader
 const AppLoader = ({ appId, args }: { appId: string, args?: any }) => {
@@ -15,9 +44,11 @@ const AppLoader = ({ appId, args }: { appId: string, args?: any }) => {
   const DemoApp = app.lazyComponent;
   
   return (
-    <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white' }}>Loading...</div>}>
-      <DemoApp {...args} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white' }}>Loading...</div>}>
+        <DemoApp {...args} />
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 
