@@ -2,13 +2,16 @@
 
 ![VirtuOS Logo](public/logo.png)
 
-VirtuOS is a high-performance, web-based operating system built with Preact, TypeScript, and Vite. It features a robust Virtual File System (VFS), window management, and a suite of built-in applications, all accessible through a modern desktop interface.
+VirtuOS is a high-performance, web-based operating system built with Preact, TypeScript, and Vite. It features a robust Virtual File System (VFS), window management, and a suite of built-in applications.
 
 ## 📺 Demo
 
 Check out the features of VirtuOS in action:
 
-[Watch Demo Video](public/demo.mp4)
+<video width="100%" controls>
+  <source src="public/demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ---
 
