@@ -16,7 +16,9 @@ export function Tooltip({ text, children, position = 'top', delay = 500 }: Toolt
   const showTooltip = () => {
     timeoutRef.current = window.setTimeout(() => {
       if (targetRef.current) {
-        const rect = targetRef.current.getBoundingClientRect();
+        // Measure the first child element if the wrapper is display: contents
+        const target = targetRef.current.firstElementChild || targetRef.current;
+        const rect = target.getBoundingClientRect();
         let x = 0;
         let y = 0;
 
