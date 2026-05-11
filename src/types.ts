@@ -51,6 +51,15 @@ export interface ContextMenuState {
   isVisible: boolean;
 }
 
+export interface ModalOptions {
+  title: string;
+  message: string;
+  type: 'alert' | 'confirm' | 'prompt';
+  defaultValue?: string;
+  onConfirm?: (value?: string) => void;
+  onCancel?: () => void;
+}
+
 export interface KernelState {
   windows: WindowState[];
   processes: Process[];
@@ -61,6 +70,7 @@ export interface KernelState {
   wallpaper: string;
   taskbarPosition: 'bottom' | 'top';
   contextMenu: ContextMenuState;
+  modal: ModalOptions | null;
   pinnedApps: string[];
   showDesktopIcons: boolean;
   desktopIconSize: 'small' | 'medium' | 'large';
@@ -68,9 +78,11 @@ export interface KernelState {
   clockFormat: '12h' | '24h';
   isNotificationPanelOpen: boolean;
   theme: 'light' | 'dark';
+  enableJellyAnimation: boolean;
   user: { username: string; password?: string } | null;
   isLoggedIn: boolean;
   hasSetup: boolean;
+  clipboard: { type: 'files' | 'text', data: any, action: 'copy' | 'cut' } | null;
   
   // Actions
   setWallpaper: (wallpaper: string) => void;
@@ -80,6 +92,7 @@ export interface KernelState {
   setTaskbarSize: (size: 'small' | 'medium' | 'large') => void;
   setClockFormat: (format: '12h' | '24h') => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  setEnableJellyAnimation: (enable: boolean) => void;
   toggleNotificationPanel: () => void;
   setupUser: (username: string, password: string) => void;
   login: (password: string) => boolean;
@@ -89,6 +102,8 @@ export interface KernelState {
   unpinApp: (appId: string) => void;
   showContextMenu: (x: number, y: number, items: ContextMenuItem[]) => void;
   hideContextMenu: () => void;
+  showModal: (options: ModalOptions) => void;
+  hideModal: () => void;
   launchApp: (appId: string, args?: Record<string, any>) => void;
   persistSettings: () => Promise<void>;
   loadSettings: () => Promise<void>;
@@ -100,6 +115,7 @@ export interface KernelState {
   updateWindowSize: (windowId: string, width: number, height: number) => void;
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void;
   removeNotification: (id: string) => void;
+  setClipboard: (clipboard: { type: 'files' | 'text', data: any, action: 'copy' | 'cut' } | null) => void;
 }
 
 export interface VFSNode {

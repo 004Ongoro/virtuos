@@ -97,6 +97,15 @@ export const APP_REGISTRY: Record<string, AppEntry> = {
     lazyComponent: lazy(() => import('./screenshot/index.tsx')),
     defaultSize: { width: 450, height: 550 },
     singleton: true
+  },
+  help: {
+    id: 'help',
+    name: 'Help',
+    icon: 'HelpCircle',
+    component: () => import('./help/index.tsx'),
+    lazyComponent: lazy(() => import('./help/index.tsx')),
+    defaultSize: { width: 700, height: 500 },
+    singleton: true
   }
 };
 

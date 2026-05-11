@@ -13,6 +13,7 @@ export const useKernel = create<KernelState>((set, get) => ({
   wallpaper: '/wp1.png',
   taskbarPosition: 'bottom',
   contextMenu: { x: 0, y: 0, items: [], isVisible: false },
+  modal: null,
   pinnedApps: ['files', 'browser', 'terminal', 'notepad', 'appstore', 'settings'],
   showDesktopIcons: true,
   desktopIconSize: 'medium',
@@ -20,9 +21,11 @@ export const useKernel = create<KernelState>((set, get) => ({
   clockFormat: '12h',
   isNotificationPanelOpen: false,
   theme: 'dark',
+  enableJellyAnimation: true,
   user: null,
   isLoggedIn: false,
   hasSetup: false,
+  clipboard: null,
 
   setWallpaper: (wallpaper: string) => {
     set({ wallpaper });
@@ -50,6 +53,10 @@ export const useKernel = create<KernelState>((set, get) => ({
   },
   setTheme: (theme: 'light' | 'dark') => {
     set({ theme });
+    get().persistSettings();
+  },
+  setEnableJellyAnimation: (enableJellyAnimation: boolean) => {
+    set({ enableJellyAnimation });
     get().persistSettings();
   },
   toggleNotificationPanel: () => set((state) => ({ isNotificationPanelOpen: !state.isNotificationPanelOpen })),
@@ -95,6 +102,8 @@ export const useKernel = create<KernelState>((set, get) => ({
   },
   showContextMenu: (x, y, items) => set({ contextMenu: { x, y, items, isVisible: true } }),
   hideContextMenu: () => set((state) => ({ contextMenu: { ...state.contextMenu, isVisible: false } })),
+  showModal: (options) => set({ modal: options }),
+  hideModal: () => set({ modal: null }),
 
   persistSettings: async () => {
     const state = get();
@@ -107,6 +116,7 @@ export const useKernel = create<KernelState>((set, get) => ({
       taskbarSize: state.taskbarSize,
       clockFormat: state.clockFormat,
       theme: state.theme,
+      enableJellyAnimation: state.enableJellyAnimation,
       user: state.user,
       hasSetup: state.hasSetup,
     };
@@ -137,6 +147,7 @@ export const useKernel = create<KernelState>((set, get) => ({
           taskbarSize: settings.taskbarSize ?? get().taskbarSize,
           clockFormat: settings.clockFormat ?? get().clockFormat,
           theme: settings.theme ?? get().theme,
+          enableJellyAnimation: settings.enableJellyAnimation ?? get().enableJellyAnimation,
           user: settings.user ?? get().user,
           hasSetup: settings.hasSetup ?? get().hasSetup,
         });
@@ -290,5 +301,6 @@ export const useKernel = create<KernelState>((set, get) => ({
     set((state) => ({
       notifications: state.notifications.filter(n => n.id !== id)
     }));
-  }
+  },
+  setClipboard: (clipboard) => set({ clipboard })
 }));

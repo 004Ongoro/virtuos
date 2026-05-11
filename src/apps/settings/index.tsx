@@ -14,6 +14,7 @@ export default function Settings() {
     taskbarSize, setTaskbarSize,
     clockFormat, setClockFormat,
     theme, setTheme,
+    enableJellyAnimation, setEnableJellyAnimation,
     pinnedApps, pinApp, unpinApp,
     user, updateUser, logout
   } = useKernel();
@@ -112,6 +113,14 @@ export default function Settings() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px', background: 'rgba(0,0,0,0.05)', borderRadius: '12px', border: '1px solid var(--window-border)' }}>
                 <span style={{ fontSize: '13px' }}>Show desktop icons</span>
                 <input type="checkbox" checked={showDesktopIcons} onChange={(e) => setShowDesktopIcons((e.target as HTMLInputElement).checked)} style={{ width: '20px', height: '20px' }} />
+              </div>
+            </section>
+
+            <section style={{ marginBottom: '40px' }}>
+              <p style={{ fontSize: '14px', fontWeight: '600', marginBottom: '15px' }}>Window Effects</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px', background: 'rgba(0,0,0,0.05)', borderRadius: '12px', border: '1px solid var(--window-border)' }}>
+                <span style={{ fontSize: '13px' }}>Enable Jelly Animation</span>
+                <input type="checkbox" checked={enableJellyAnimation} onChange={(e) => setEnableJellyAnimation((e.target as HTMLInputElement).checked)} style={{ width: '20px', height: '20px' }} />
               </div>
             </section>
 

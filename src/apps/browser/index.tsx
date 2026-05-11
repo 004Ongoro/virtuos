@@ -70,8 +70,7 @@ export default function Browser(props: { filePath?: string }) {
       if (target.includes('.') && !target.includes(' ')) {
         target = 'https://' + target;
       } else {
-        // Use DuckDuckGo Lite which is more likely to work in iframes
-        target = `https://duckduckgo.com/lite/?q=${encodeURIComponent(target)}`;
+        target = `https://www.bing.com/search?q=${encodeURIComponent(target)}`;
       }
     }
 
@@ -290,7 +289,7 @@ export default function Browser(props: { filePath?: string }) {
                 value={inputUrl} 
                 onInput={(e) => setInputUrl((e.target as HTMLInputElement).value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGo()}
-                placeholder="Search DuckDuckGo..."
+                placeholder="Search Bing..."
                 style={{ flex: 1, padding: '10px 20px', borderRadius: '30px', border: '1px solid #cbd5e1', fontSize: '15px', outline: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
               />
               <button onClick={handleGo} style={{ padding: '10px 20px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '30px', cursor: 'pointer', fontWeight: '600' }}>Search</button>

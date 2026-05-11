@@ -38,6 +38,17 @@ export default function Notepad(props: { filePath?: string }) {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [content, currentPath]);
+
   const fileName = currentPath.split('/').pop() || 'untitled.txt';
 
   if (loading) return <div style={{ padding: '20px', color: '#64748b' }}>Loading...</div>;

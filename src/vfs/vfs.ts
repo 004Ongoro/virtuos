@@ -22,7 +22,16 @@ export const vfs = {
     }
     
     // default folders
-    const defaults = ['/home', '/home/documents', '/home/pictures', '/bin', '/trash'];
+    const defaults = [
+      '/home', 
+      '/home/desktop', 
+      '/home/documents', 
+      '/home/pictures', 
+      '/home/music', 
+      '/home/videos', 
+      '/bin', 
+      '/trash'
+    ];
     for (const path of defaults) {
       if (!(await this.exists(path))) {
         const parts = path.split('/');
@@ -85,6 +94,34 @@ export const vfs = {
       updatedAt: Date.now()
     };
     await set(path, node);
+  },
+
+  async copyFile(oldPath: string, newPath: string): Promise<void> {
+    const node = await this.readFile(oldPath);
+    if (!node) throw new Error(`Source not found: ${oldPath}`);
+
+    const parts = newPath.split('/');
+    const name = parts.pop() || '';
+    const parent = parts.join('/') || '/';
+
+    const newNode: VFSNode = {
+      ...node,
+      name,
+      parent,
+      updatedAt: Date.now()
+    };
+
+    await set(newPath, newNode);
+
+    if (node.type === 'dir') {
+      const children = await keys() as string[];
+      for (const childKey of children) {
+        if (childKey.startsWith(oldPath + '/')) {
+          const relativePath = childKey.slice(oldPath.length);
+          await this.copyFile(childKey, newPath + relativePath);
+        }
+      }
+    }
   },
 
   async mkdir(parent: string, name: string): Promise<void> {
