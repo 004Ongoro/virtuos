@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'preact/hooks';
 import { useKernel } from '../kernel/useKernel';
 import type { WindowState } from '../types';
-import { Minimize2, Maximize2, X, LayoutGrid } from 'lucide-preact';
+import { Minimize2, Maximize2, X } from 'lucide-preact';
 
 interface WindowProps {
   window: WindowState;

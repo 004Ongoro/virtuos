@@ -18,7 +18,7 @@ export type CLIProgram = {
 export const help: CLIProgram = {
   name: 'help',
   description: 'List available commands',
-  execute: async (args, { print, programs }) => {
+  execute: async (_args, { print, programs }) => {
     print('VirtuOS CLI Programs:');
     print('---------------------');
     if (programs && programs.length > 0) {
@@ -32,7 +32,7 @@ export const help: CLIProgram = {
 export const ls: CLIProgram = {
   name: 'ls',
   description: 'List directory contents',
-  execute: async (args, { cwd, fs, print }) => {
+  execute: async (_args, { cwd, fs, print }) => {
     try {
       const items = await fs.listFiles(cwd);
       if (items.length === 0) {
@@ -87,7 +87,7 @@ export const cat: CLIProgram = {
 export const pwd: CLIProgram = {
   name: 'pwd',
   description: 'Print working directory',
-  execute: async (args, { cwd, print }) => {
+  execute: async (_args, { cwd, print }) => {
     print(cwd);
   }
 };
@@ -95,7 +95,7 @@ export const pwd: CLIProgram = {
 export const whoami: CLIProgram = {
   name: 'whoami',
   description: 'Print current user',
-  execute: async (args, { print, kernel }) => {
+  execute: async (_args, { print, kernel }) => {
     print(kernel.user?.username || 'virtuos-user');
   }
 };

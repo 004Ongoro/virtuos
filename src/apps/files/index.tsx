@@ -249,7 +249,7 @@ const handleDropOnFolder = async (e: DragEvent, folder: VFSNode) => {
   }, [items, selectedFiles, clipboard, currentPath]);
 
   const handleMarqueeMouseDown = (e: MouseEvent) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || !gridRef.current) return;
     if (e.target !== gridRef.current) return;
 
     isMarqueeDragging.current = true;
